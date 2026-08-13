@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: stayra
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/stayra}
+    username: ${DATABASE_USERNAME:stayra}
+    password: ${DATABASE_PASSWORD:stayra}
+    hikari:
+      maximum-pool-size: ${DATABASE_POOL_SIZE:10}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2s
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  forward-headers-strategy: framework
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+
+stayra:
+  booking:
+    hold-duration: ${BOOKING_HOLD_DURATION:PT10M}

@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Local secrets
+.env
+
+# Local learning notes
+TUTORIAL.md
+DOMAIN.md
+
+# Runtime files
+*.log
+logs/

@@ -1,0 +1,15 @@
+spring:
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+management:
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.davidantas.stayra: DEBUG
