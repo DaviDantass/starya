@@ -1,4 +1,15 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/stayra
+    username: postgres
+    password: ${DATABASE_PASSWORD}
+
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6379
+#      password:
+
   jpa:
     show-sql: true
     properties:

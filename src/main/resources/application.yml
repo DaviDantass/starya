@@ -3,8 +3,8 @@ spring:
     name: stayra
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/stayra}
-    username: ${DATABASE_USERNAME:stayra}
-    password: ${DATABASE_PASSWORD:stayra}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD}
     hikari:
       maximum-pool-size: ${DATABASE_POOL_SIZE:10}
   data:
