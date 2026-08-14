@@ -36,7 +36,6 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @NotBlank(message = "Username is required")
     @Size(min = 3, max = 30)
     @Column(nullable = false, length = 30)
@@ -87,6 +86,26 @@ public class User implements UserDetails {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    public User(
+            String username,
+            String name,
+            String email,
+            String password,
+            String cpf,
+            LocalDate birthDate,
+            UserType userType,
+            UserStatus status
+    ) {
+        this.username = username;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.cpf = cpf;
+        this.birthDate = birthDate;
+        this.userType = userType;
+        this.status = status;
+    }
 
     // Spring security
     @Override
