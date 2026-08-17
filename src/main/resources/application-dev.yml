@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/stayra
-    username: postgres
-    password: ${DATABASE_PASSWORD}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/stayra}
+    username: ${DATABASE_USERNAME:stayra}
+    password: ${DATABASE_PASSWORD:stayra_local_password}
 
 #  data:
 #    redis:
