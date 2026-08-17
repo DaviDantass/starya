@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: stayra
+          POSTGRES_USER: stayra
+          POSTGRES_PASSWORD: stayra_local_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U stayra -d stayra"
+          --health-interval=5s
+          --health-timeout=3s
+          --health-retries=10
+
+    env:
+      DATABASE_URL: jdbc:postgresql://localhost:5432/stayra
+      DATABASE_USERNAME: stayra
+      DATABASE_PASSWORD: stayra_local_password
+      JWT_SECRET: WStirHuaJfTs6TxIOXcUPagDej9qoQZ5nn87JXzDFC0
+      JWT_EXPIRATION: 3600
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Verify
+        run: ./mvnw --batch-mode verify
