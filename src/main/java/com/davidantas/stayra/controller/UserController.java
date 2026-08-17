@@ -6,6 +6,7 @@ import com.davidantas.stayra.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/users")
@@ -20,5 +21,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse create(@RequestBody @Valid CreateUserRequest request) {
         return userService.create(request);
+    }
+
+    @GetMapping("/me")
+    public UserResponse me(Authentication authentication) {
+        return userService.findByUsername(authentication.getName());
     }
 }

@@ -43,4 +43,12 @@ public class UserService {
                 savedUser.getCreatedAt()
         );
     }
+
+    public UserResponse findByUsername(String username) {
+        User user = userRepository.findByUsernameOrEmail(username, username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        return new UserResponse(user.getId(), user.getUsername(), user.getName(),
+                user.getEmail(), user.getUserType(), user.getStatus(), user.getCreatedAt());
+    }
 }

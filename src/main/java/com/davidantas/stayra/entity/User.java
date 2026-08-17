@@ -37,7 +37,7 @@ public class User implements UserDetails {
     private Long id;
 
     @NotBlank(message = "Username is required")
-    @Size(min = 3, max = 30)
+    @Pattern(regexp = "^@[a-zA-Z0-9_]{2,29}$")
     @Column(nullable = false, length = 30)
     private String username;
 

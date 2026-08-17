@@ -7,7 +7,7 @@ import java.time.LocalDate;
 public record CreateUserRequest(
 
         @NotBlank
-        @Size(min = 3, max = 30)
+        @Pattern(regexp = "^@[a-zA-Z0-9_]{2,29}$")
         String username,
 
         @NotBlank

@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import java.util.Optional;
 
 class UserServiceTest {
 
@@ -37,5 +38,19 @@ class UserServiceTest {
         verify(validation).validate(request);
         verify(encoder).encode("Senha@123");
         verify(repository).save(any(User.class));
+    }
+
+    @Test
+    void findsAuthenticatedUser() {
+        UserRepository repository = mock(UserRepository.class);
+        UserService service = new UserService(repository, mock(UserValidation.class), mock(PasswordEncoder.class));
+        User user = new User("@david", "David", "david@example.com", "hash",
+                "12345678901", LocalDate.of(1995, 5, 20), UserType.GUEST, UserStatus.ACTIVE);
+        when(repository.findByUsernameOrEmail("@david", "@david")).thenReturn(Optional.of(user));
+
+        UserResponse response = service.findByUsername("@david");
+
+        assertEquals("@david", response.username());
+        assertEquals("david@example.com", response.email());
     }
 }
