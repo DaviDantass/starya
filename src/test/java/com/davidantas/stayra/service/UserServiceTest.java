@@ -5,6 +5,7 @@ import com.davidantas.stayra.dto.UserResponse;
 import com.davidantas.stayra.entity.User;
 import com.davidantas.stayra.entity.enums.UserStatus;
 import com.davidantas.stayra.entity.enums.UserType;
+import com.davidantas.stayra.exception.ResourceNotFoundException;
 import com.davidantas.stayra.repository.UserRepository;
 import com.davidantas.stayra.validation.UserValidation;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
 import java.util.Optional;
 
 class UserServiceTest {
@@ -46,11 +48,32 @@ class UserServiceTest {
         UserService service = new UserService(repository, mock(UserValidation.class), mock(PasswordEncoder.class));
         User user = new User("@david", "David", "david@example.com", "hash",
                 "12345678901", LocalDate.of(1995, 5, 20), UserType.GUEST, UserStatus.ACTIVE);
-        when(repository.findByUsernameOrEmail("@david", "@david")).thenReturn(Optional.of(user));
+        when(repository.findByUsername("@david"))
+                .thenReturn(Optional.of(user));
 
         UserResponse response = service.findByUsername("@david");
 
         assertEquals("@david", response.username());
         assertEquals("david@example.com", response.email());
     }
+
+    @Test
+    void throwsWhenAuthenticatedUserDoesNotExist() {
+        UserRepository repository = mock(UserRepository.class);
+        UserService service = new UserService(
+                repository,
+                mock(UserValidation.class),
+                mock(PasswordEncoder.class)
+        );
+
+        when(repository.findByUsername("@missing"))
+                .thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> service.findByUsername("@missing")
+        );
+        assertEquals("User not found", exception.getMessage());
+    }
+
 }

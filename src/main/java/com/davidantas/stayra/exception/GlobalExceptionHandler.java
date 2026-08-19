@@ -32,6 +32,16 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.BAD_REQUEST, message);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> notFound(ResourceNotFoundException exception) {
+        return response(HttpStatus.NOT_FOUND, exception.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> internalServerError(Exception exception) {
+        return response(HttpStatus.INTERNAL_SERVER_ERROR, exception.getMessage());
+    }
+
     private ResponseEntity<Map<String, Object>> response(HttpStatus status, String message) {
         return ResponseEntity.status(status).body(Map.of(
                 "timestamp", OffsetDateTime.now(),

@@ -5,6 +5,7 @@ import com.davidantas.stayra.dto.UserResponse;
 import com.davidantas.stayra.entity.User;
 import com.davidantas.stayra.entity.enums.UserStatus;
 import com.davidantas.stayra.entity.enums.UserType;
+import com.davidantas.stayra.exception.ResourceNotFoundException;
 import com.davidantas.stayra.repository.UserRepository;
 import com.davidantas.stayra.validation.UserValidation;
 import lombok.RequiredArgsConstructor;
@@ -45,8 +46,8 @@ public class UserService {
     }
 
     public UserResponse findByUsername(String username) {
-        User user = userRepository.findByUsernameOrEmail(username, username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return new UserResponse(user.getId(), user.getUsername(), user.getName(),
                 user.getEmail(), user.getUserType(), user.getStatus(), user.getCreatedAt());
