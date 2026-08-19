@@ -205,6 +205,44 @@ class UserServiceTest {
         verify(encoder, never()).encode(anyString());
     }
 
+    @Test
+    void softDeletesAuthenticatedUser() {
+        UserRepository repository = mock(UserRepository.class);
+        UserService service = new UserService(
+                repository,
+                List.of(),
+                List.of(),
+                mock(PasswordEncoder.class)
+        );
+        User user = user("David", "david@example.com", LocalDate.of(1995, 5, 20));
+        when(repository.findByUsername("@david")).thenReturn(Optional.of(user));
+
+        service.delete("@david");
+
+        assertEquals(UserStatus.DELETED, user.getStatus());
+        verify(repository, never()).delete(any());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void rejectsAlreadyDeletedUser() {
+        UserRepository repository = mock(UserRepository.class);
+        UserService service = new UserService(
+                repository,
+                List.of(),
+                List.of(),
+                mock(PasswordEncoder.class)
+        );
+        User user = user("David", "david@example.com", LocalDate.of(1995, 5, 20));
+        user.delete();
+        when(repository.findByUsername("@david")).thenReturn(Optional.of(user));
+
+        assertThrows(BadRequestException.class, () -> service.delete("@david"));
+
+        assertEquals(UserStatus.DELETED, user.getStatus());
+        verify(repository, never()).delete(any());
+    }
+
     private User user(String name, String email, LocalDate birthDate) {
         return new User(
                 "@david",

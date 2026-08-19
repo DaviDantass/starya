@@ -52,4 +52,10 @@ public class UserController {
                 request
         );
     }
+
+    @DeleteMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(Authentication authentication) {
+        userService.delete(authentication.getName());
+    }
 }

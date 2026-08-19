@@ -98,6 +98,17 @@ public class UserService {
         user.changePassword(passwordEncoder.encode(request.newPassword()));
     }
 
+    @Transactional
+    public void delete(String username) {
+        User user = findAuthenticatedUser(username);
+
+        if (user.getStatus() == UserStatus.DELETED) {
+            throw new BadRequestException("User is already deleted");
+        }
+
+        user.delete();
+    }
+
     private UserResponse toResponse(User user) {
         return new UserResponse(user.getId(), user.getUsername(), user.getName(), user.getEmail(), user.getUserType(), user.getStatus(), user.getCreatedAt());
     }

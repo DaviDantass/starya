@@ -129,6 +129,10 @@ public class User implements UserDetails {
         this.password = encodedPassword;
     }
 
+    public void delete() {
+        this.status = UserStatus.DELETED;
+    }
+
     // Spring security
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
