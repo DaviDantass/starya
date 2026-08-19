@@ -1,12 +1,14 @@
 package com.davidantas.stayra.service;
 
 import com.davidantas.stayra.dto.CreateUserRequest;
+import com.davidantas.stayra.dto.ChangePasswordRequest;
 import com.davidantas.stayra.dto.UpdateUserRequest;
 import com.davidantas.stayra.dto.UserResponse;
 import com.davidantas.stayra.entity.User;
 import com.davidantas.stayra.entity.enums.UserStatus;
 import com.davidantas.stayra.entity.enums.UserType;
 import com.davidantas.stayra.exception.ResourceNotFoundException;
+import com.davidantas.stayra.exception.BadRequestException;
 import com.davidantas.stayra.repository.UserRepository;
 import com.davidantas.stayra.validation.CreateUserValidationStrategy;
 import com.davidantas.stayra.validation.UpdateUserValidationStrategy;
@@ -134,6 +136,73 @@ class UserServiceTest {
         assertEquals("Novo Nome", response.name());
         assertEquals("david@example.com", response.email());
         assertEquals(LocalDate.of(1995, 5, 20), user.getBirthDate());
+    }
+
+    @Test
+    void changesAuthenticatedUserPassword() {
+        UserRepository repository = mock(UserRepository.class);
+        PasswordEncoder encoder = mock(PasswordEncoder.class);
+        UserService service = new UserService(
+                repository,
+                List.of(),
+                List.of(),
+                encoder
+        );
+        User user = user("David", "david@example.com", LocalDate.of(1995, 5, 20));
+        when(repository.findByUsername("@david")).thenReturn(Optional.of(user));
+        when(encoder.matches("old-password", "hash")).thenReturn(true);
+        when(encoder.matches("new-password", "hash")).thenReturn(false);
+        when(encoder.encode("new-password")).thenReturn("new-hash");
+
+        service.changePassword(
+                "@david",
+                new ChangePasswordRequest("old-password", "new-password")
+        );
+
+        assertEquals("new-hash", user.getPassword());
+        verify(encoder).matches("old-password", "hash");
+        verify(encoder).encode("new-password");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void rejectsInvalidCurrentPassword() {
+        UserRepository repository = mock(UserRepository.class);
+        PasswordEncoder encoder = mock(PasswordEncoder.class);
+        UserService service = new UserService(repository, List.of(), List.of(), encoder);
+        User user = user("David", "david@example.com", LocalDate.of(1995, 5, 20));
+        when(repository.findByUsername("@david")).thenReturn(Optional.of(user));
+        when(encoder.matches("wrong-password", "hash")).thenReturn(false);
+
+        assertThrows(
+                BadRequestException.class,
+                () -> service.changePassword(
+                        "@david",
+                        new ChangePasswordRequest("wrong-password", "new-password")
+                )
+        );
+
+        verify(encoder, never()).encode(anyString());
+    }
+
+    @Test
+    void rejectsPasswordEqualToCurrentPassword() {
+        UserRepository repository = mock(UserRepository.class);
+        PasswordEncoder encoder = mock(PasswordEncoder.class);
+        UserService service = new UserService(repository, List.of(), List.of(), encoder);
+        User user = user("David", "david@example.com", LocalDate.of(1995, 5, 20));
+        when(repository.findByUsername("@david")).thenReturn(Optional.of(user));
+        when(encoder.matches("same-password", "hash")).thenReturn(true);
+
+        assertThrows(
+                BadRequestException.class,
+                () -> service.changePassword(
+                        "@david",
+                        new ChangePasswordRequest("same-password", "same-password")
+                )
+        );
+
+        verify(encoder, never()).encode(anyString());
     }
 
     private User user(String name, String email, LocalDate birthDate) {

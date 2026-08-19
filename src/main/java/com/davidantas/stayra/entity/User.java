@@ -125,6 +125,9 @@ public class User implements UserDetails {
         }
     }
 
+    public void changePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 
     // Spring security
     @Override

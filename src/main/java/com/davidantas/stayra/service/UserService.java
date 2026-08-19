@@ -1,11 +1,13 @@
 package com.davidantas.stayra.service;
 
+import com.davidantas.stayra.dto.ChangePasswordRequest;
 import com.davidantas.stayra.dto.CreateUserRequest;
 import com.davidantas.stayra.dto.UpdateUserRequest;
 import com.davidantas.stayra.dto.UserResponse;
 import com.davidantas.stayra.entity.User;
 import com.davidantas.stayra.entity.enums.UserStatus;
 import com.davidantas.stayra.entity.enums.UserType;
+import com.davidantas.stayra.exception.BadRequestException;
 import com.davidantas.stayra.exception.ResourceNotFoundException;
 import com.davidantas.stayra.repository.UserRepository;
 import com.davidantas.stayra.validation.CreateUserValidationStrategy;
@@ -70,6 +72,31 @@ public class UserService {
         return toResponse(user);
     }
 
+    @Transactional
+    public void changePassword(String username, ChangePasswordRequest request
+    ) {
+        User user = findAuthenticatedUser(username);
+
+        if (!passwordEncoder.matches(
+                request.currentPassword(),
+                user.getPassword()
+        )) {
+            throw new BadRequestException(
+                    "Current password is invalid"
+            );
+        }
+
+        if (passwordEncoder.matches(
+                request.newPassword(),
+                user.getPassword()
+        )) {
+            throw new BadRequestException(
+                    "New password must be different"
+            );
+        }
+
+        user.changePassword(passwordEncoder.encode(request.newPassword()));
+    }
 
     private UserResponse toResponse(User user) {
         return new UserResponse(user.getId(), user.getUsername(), user.getName(), user.getEmail(), user.getUserType(), user.getStatus(), user.getCreatedAt());

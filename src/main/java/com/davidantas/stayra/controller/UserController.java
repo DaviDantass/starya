@@ -1,5 +1,6 @@
 package com.davidantas.stayra.controller;
 
+import com.davidantas.stayra.dto.ChangePasswordRequest;
 import com.davidantas.stayra.dto.CreateUserRequest;
 import com.davidantas.stayra.dto.UpdateUserRequest;
 import com.davidantas.stayra.dto.UserResponse;
@@ -40,4 +41,15 @@ public class UserController {
         );
     }
 
+    @PatchMapping("/me/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword(
+            Authentication authentication,
+            @RequestBody @Valid ChangePasswordRequest request
+    ) {
+        userService.changePassword(
+                authentication.getName(),
+                request
+        );
+    }
 }
