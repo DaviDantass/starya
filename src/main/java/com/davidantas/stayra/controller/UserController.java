@@ -1,6 +1,7 @@
 package com.davidantas.stayra.controller;
 
 import com.davidantas.stayra.dto.CreateUserRequest;
+import com.davidantas.stayra.dto.UpdateUserRequest;
 import com.davidantas.stayra.dto.UserResponse;
 import com.davidantas.stayra.service.UserService;
 import jakarta.validation.Valid;
@@ -27,4 +28,16 @@ public class UserController {
     public UserResponse me(Authentication authentication) {
         return userService.findByUsername(authentication.getName());
     }
+
+    @PatchMapping("/me")
+    public UserResponse update(
+            Authentication authentication,
+            @RequestBody @Valid UpdateUserRequest request
+    ) {
+        return userService.update(
+                authentication.getName(),
+                request
+        );
+    }
+
 }

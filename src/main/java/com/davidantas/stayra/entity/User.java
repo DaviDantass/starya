@@ -107,6 +107,25 @@ public class User implements UserDetails {
         this.status = status;
     }
 
+    public void updateProfile(
+            String name,
+            String email,
+            LocalDate birthDate
+    ) {
+        if (name != null) {
+            this.name = name;
+        }
+
+        if (email != null) {
+            this.email = email;
+        }
+
+        if (birthDate != null) {
+            this.birthDate = birthDate;
+        }
+    }
+
+
     // Spring security
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

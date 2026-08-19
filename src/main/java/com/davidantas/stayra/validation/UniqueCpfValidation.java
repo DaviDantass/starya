@@ -8,20 +8,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class UserValidation {
-
+public class UniqueCpfValidation implements CreateUserValidationStrategy {
     private final UserRepository userRepository;
 
+    @Override
     public void validate(CreateUserRequest request) {
-
-        if (userRepository.existsByUsername(request.username())) {
-            throw new DuplicateResourceException("Username already registered");
-        }
-
-        if (userRepository.existsByEmail(request.email())) {
-            throw new DuplicateResourceException("Email already registered");
-        }
-
         if (userRepository.existsByCpf(request.cpf())) {
             throw new DuplicateResourceException("CPF already registered");
         }

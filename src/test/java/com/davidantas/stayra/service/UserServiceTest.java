@@ -1,17 +1,20 @@
 package com.davidantas.stayra.service;
 
 import com.davidantas.stayra.dto.CreateUserRequest;
+import com.davidantas.stayra.dto.UpdateUserRequest;
 import com.davidantas.stayra.dto.UserResponse;
 import com.davidantas.stayra.entity.User;
 import com.davidantas.stayra.entity.enums.UserStatus;
 import com.davidantas.stayra.entity.enums.UserType;
 import com.davidantas.stayra.exception.ResourceNotFoundException;
 import com.davidantas.stayra.repository.UserRepository;
-import com.davidantas.stayra.validation.UserValidation;
+import com.davidantas.stayra.validation.CreateUserValidationStrategy;
+import com.davidantas.stayra.validation.UpdateUserValidationStrategy;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,9 +27,9 @@ class UserServiceTest {
     @Test
     void createsGuestWithEncodedPassword() {
         UserRepository repository = mock(UserRepository.class);
-        UserValidation validation = mock(UserValidation.class);
+        CreateUserValidationStrategy validation = mock(CreateUserValidationStrategy.class);
         PasswordEncoder encoder = mock(PasswordEncoder.class);
-        UserService service = new UserService(repository, validation, encoder);
+        UserService service = new UserService(repository, List.of(validation), List.of(), encoder);
         CreateUserRequest request = new CreateUserRequest("david", "David", "david@example.com",
                 "Senha@123", "12345678901", LocalDate.of(1995, 5, 20));
         when(encoder.encode("Senha@123")).thenReturn("hash");
@@ -45,7 +48,7 @@ class UserServiceTest {
     @Test
     void findsAuthenticatedUser() {
         UserRepository repository = mock(UserRepository.class);
-        UserService service = new UserService(repository, mock(UserValidation.class), mock(PasswordEncoder.class));
+        UserService service = new UserService(repository, List.of(), List.of(), mock(PasswordEncoder.class));
         User user = new User("@david", "David", "david@example.com", "hash",
                 "12345678901", LocalDate.of(1995, 5, 20), UserType.GUEST, UserStatus.ACTIVE);
         when(repository.findByUsername("@david"))
@@ -62,7 +65,8 @@ class UserServiceTest {
         UserRepository repository = mock(UserRepository.class);
         UserService service = new UserService(
                 repository,
-                mock(UserValidation.class),
+                List.of(),
+                List.of(),
                 mock(PasswordEncoder.class)
         );
 
@@ -74,6 +78,75 @@ class UserServiceTest {
                 () -> service.findByUsername("@missing")
         );
         assertEquals("User not found", exception.getMessage());
+    }
+
+    @Test
+    void updatesAuthenticatedUserProfile() {
+        UserRepository repository = mock(UserRepository.class);
+        UpdateUserValidationStrategy validation = mock(UpdateUserValidationStrategy.class);
+        UserService service = new UserService(
+                repository,
+                List.of(),
+                List.of(validation),
+                mock(PasswordEncoder.class)
+        );
+        User user = user("David", "david@example.com", LocalDate.of(1995, 5, 20));
+        UpdateUserRequest request = new UpdateUserRequest(
+                "David Antas",
+                "  NEW@EXAMPLE.COM ",
+                LocalDate.of(1994, 4, 10)
+        );
+        when(repository.findByUsername("@david")).thenReturn(Optional.of(user));
+
+        UserResponse response = service.update("@david", request);
+
+        assertEquals("David Antas", response.name());
+        assertEquals("new@example.com", response.email());
+        assertEquals(LocalDate.of(1994, 4, 10), user.getBirthDate());
+        verify(validation).validate(
+                eq(user),
+                eq(new UpdateUserRequest(
+                        "David Antas",
+                        "new@example.com",
+                        LocalDate.of(1994, 4, 10)
+                ))
+        );
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void partiallyUpdatesAuthenticatedUserProfile() {
+        UserRepository repository = mock(UserRepository.class);
+        UserService service = new UserService(
+                repository,
+                List.of(),
+                List.of(),
+                mock(PasswordEncoder.class)
+        );
+        User user = user("David", "david@example.com", LocalDate.of(1995, 5, 20));
+        when(repository.findByUsername("@david")).thenReturn(Optional.of(user));
+
+        UserResponse response = service.update(
+                "@david",
+                new UpdateUserRequest("Novo Nome", null, null)
+        );
+
+        assertEquals("Novo Nome", response.name());
+        assertEquals("david@example.com", response.email());
+        assertEquals(LocalDate.of(1995, 5, 20), user.getBirthDate());
+    }
+
+    private User user(String name, String email, LocalDate birthDate) {
+        return new User(
+                "@david",
+                name,
+                email,
+                "hash",
+                "12345678901",
+                birthDate,
+                UserType.GUEST,
+                UserStatus.ACTIVE
+        );
     }
 
 }
